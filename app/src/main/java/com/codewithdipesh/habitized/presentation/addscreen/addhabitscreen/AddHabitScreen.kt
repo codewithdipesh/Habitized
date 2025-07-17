@@ -90,10 +90,10 @@ import androidx.core.net.toUri
 @Composable
 fun AddHabitScreen(
     modifier: Modifier = Modifier,
-    id : UUID? = null,
+    id: UUID? = null,
     navController: NavController,
     viewmodel: AddViewModel,
-    date : LocalDate
+    date: LocalDate
 ) {
     val state by viewmodel.habitUiState.collectAsState()
     val scrollstate = rememberScrollState()
@@ -114,19 +114,19 @@ fun AddHabitScreen(
         val color = keys.random()
         viewmodel.setColor(state.colorOptions.get(color)!!)
         viewmodel.getGoals()
-        if(id != null){
+        if (id != null) {
             viewmodel.init(id)
         }
     }
     //check if alarm permission is granted or not
-    LaunchedEffect(state.isShowReminderTime){
-        if(state.isShowReminderTime){
-            val permission = if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+    LaunchedEffect(state.isShowReminderTime) {
+        if (state.isShowReminderTime) {
+            val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 context.getSystemService(AlarmManager::class.java).canScheduleExactAlarms()
-            }else {
+            } else {
                 true
             }
-            if(!permission){
+            if (!permission) {
                 val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM).apply {
                     data = "package:${context.packageName}".toUri()
                 }
@@ -138,10 +138,10 @@ fun AddHabitScreen(
     LaunchedEffect(viewmodel.uiEvent) {
         viewmodel.uiEvent.collect {
             scope.launch {
-                if(it == "Habit Created Successfully"){
+                if (it == "Habit Created Successfully") {
                     Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                     navController.navigateUp()
-                }else{
+                } else {
                     Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                 }
             }
@@ -155,7 +155,7 @@ fun AddHabitScreen(
                 isShowingLeftIcon = true,
                 leftIcon = {
                     IconButton(
-                        onClick = {navController.navigateUp()},
+                        onClick = { navController.navigateUp() },
                         modifier = Modifier
                             .padding(top = 30.dp)
                     ) {
@@ -176,13 +176,13 @@ fun AddHabitScreen(
                     .padding(start = 30.dp)
                     .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(20.dp))
                     .clip(RoundedCornerShape(20.dp))
-                    .clickable{
+                    .clickable {
                         scope.launch {
                             viewmodel.addHabit(date)
                         }
                     },
                 contentAlignment = Alignment.Center
-            ){
+            ) {
                 Text(
                     text = "Done",
                     style = TextStyle(
@@ -194,11 +194,11 @@ fun AddHabitScreen(
                 )
             }
         }
-    ){innerPadding->
+    ) { innerPadding ->
 
         val sheetstate = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-        if(state.colorOptionAvailable){
+        if (state.colorOptionAvailable) {
             ColorChoser(
                 onColorSelected = {
                     viewmodel.setColor(it)
@@ -213,7 +213,7 @@ fun AddHabitScreen(
             )
         }
 
-        if(state.isShowingParamOptions){
+        if (state.isShowingParamOptions) {
             ParamChoser(
                 onParamSelected = {
                     viewmodel.setParam(it)
@@ -227,31 +227,32 @@ fun AddHabitScreen(
             )
         }
 
-        if(isShowingGoals){
+        if (isShowingGoals) {
             GoalsForHabit(
-               goals = state.availableGoals,
-               onSelect = {
-                   viewmodel.setGoal(it)
-               },
-               sheetState = sheetstate,
-               onDismiss = {
-                   isShowingGoals = false
-               }
+                goals = state.availableGoals,
+                onSelect = {
+                    viewmodel.setGoal(it)
+                },
+                sheetState = sheetstate,
+                onDismiss = {
+                    isShowingGoals = false
+                }
             )
         }
 
         Column(
-            modifier = Modifier.fillMaxSize()
+            modifier = Modifier
+                .fillMaxSize()
                 .padding(innerPadding)
                 .padding(horizontal = 24.dp)
                 .padding(bottom = 120.dp)
                 .verticalScroll(scrollstate),
             verticalArrangement = Arrangement.spacedBy(16.dp)
-        ){
+        ) {
             //heading
-            Row(verticalAlignment = Alignment.CenterVertically){
+            Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = if(id == null) "Create" else "Edit",
+                    text = if (id == null) "Create" else "Edit",
                     style = TextStyle(
                         color = MaterialTheme.colorScheme.onPrimary,
                         fontFamily = regular,
@@ -273,9 +274,9 @@ fun AddHabitScreen(
             }
             //title
             InputElement(
-                color = if(state.title.isEmpty()) MaterialTheme.colorScheme.surface
+                color = if (state.title.isEmpty()) MaterialTheme.colorScheme.surface
                 else MaterialTheme.colorScheme.secondary
-            ){
+            ) {
                 Box {
                     BasicTextField(
                         value = state.title,
@@ -310,9 +311,9 @@ fun AddHabitScreen(
             }
             //description
             InputElement(
-                color = if(state.description.isEmpty()) MaterialTheme.colorScheme.surface
+                color = if (state.description.isEmpty()) MaterialTheme.colorScheme.surface
                 else MaterialTheme.colorScheme.secondary
-            ){
+            ) {
                 Box {
                     BasicTextField(
                         value = state.description,
@@ -326,7 +327,7 @@ fun AddHabitScreen(
                             fontSize = 20.sp
                         ),
                         singleLine = false,
-                        maxLines = 5 ,
+                        maxLines = 5,
                         cursorBrush = SolidColor(colorResource(R.color.primary)),
                         modifier = Modifier.fillMaxWidth()
                     )
@@ -351,7 +352,7 @@ fun AddHabitScreen(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
-                ){
+                ) {
                     //Text
                     Text(
                         text = "Color",
@@ -370,7 +371,7 @@ fun AddHabitScreen(
                             .background(
                                 colorResource(state.colorOptions.entries.first { it.value == state.colorKey }.key)
                             )
-                            .clickable{
+                            .clickable {
                                 viewmodel.toggleHabitColorOption()
                             }
                     )
@@ -380,11 +381,11 @@ fun AddHabitScreen(
             //choose type
             InputElement(
                 title = "Type",
-            ){
+            ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
-                ){
+                ) {
                     Selector(
                         options = HabitType.getHabitTypes().map { it },
                         selectedOption = state.type,
@@ -400,22 +401,22 @@ fun AddHabitScreen(
 
                     //input of targets
                     //choose param
-                    if(state.type != HabitType.OneTime && state.type != HabitType.Duration){
+                    if (state.type != HabitType.OneTime && state.type != HabitType.Duration) {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.Start,
                             verticalAlignment = Alignment.CenterVertically
-                        ){
+                        ) {
                             Column(
                                 modifier = Modifier.width(40.dp)
-                            ){
+                            ) {
                                 BasicTextField(
-                                    value = if(state.countTarget != null && state.countTarget != 0) state.countTarget.toString() else "",
+                                    value = if (state.countTarget != null && state.countTarget != 0) state.countTarget.toString() else "",
                                     onValueChange = {
-                                        if(it.isEmpty() || it.toIntOrNull() != null){
-                                            if(it.isNotEmpty()){
-                                                if(it.toInt() < 999 ) viewmodel.setTargetCount(it.toInt())
-                                            }else{
+                                        if (it.isEmpty() || it.toIntOrNull() != null) {
+                                            if (it.isNotEmpty()) {
+                                                if (it.toInt() < 999) viewmodel.setTargetCount(it.toInt())
+                                            } else {
                                                 viewmodel.setTargetCount(0)
                                             }
                                         }
@@ -464,8 +465,8 @@ fun AddHabitScreen(
 
                         }
                     }
-                    if(state.type == HabitType.Duration || state.type == HabitType.Session){
-                        if(state.type == HabitType.Session){
+                    if (state.type == HabitType.Duration || state.type == HabitType.Session) {
+                        if (state.type == HabitType.Session) {
                             Text(
                                 text = "For Each",
                                 style = TextStyle(
@@ -474,15 +475,18 @@ fun AddHabitScreen(
                                     fontSize = 16.sp
                                 ),
                                 textAlign = TextAlign.Start,
-                                modifier = Modifier.padding(horizontal = 8.dp).fillMaxWidth()
+                                modifier = Modifier
+                                    .padding(horizontal = 8.dp)
+                                    .fillMaxWidth()
                             )
                         }
-                        Row(modifier = Modifier
-                            .fillMaxWidth()
-                            .wrapContentHeight(),
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentHeight(),
                             horizontalArrangement = Arrangement.spacedBy(4.dp),
                             verticalAlignment = Alignment.CenterVertically
-                        ){
+                        ) {
                             //hour
                             TimePicker(
                                 width = 80.dp,
@@ -495,9 +499,11 @@ fun AddHabitScreen(
                                 textFont = regular,
                                 textWeight = FontWeight.Normal,
                                 selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                                nonSelectedTextColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
-                                onItemSelected = {item->
-                                  viewmodel.setHours(item)
+                                nonSelectedTextColor = MaterialTheme.colorScheme.onPrimary.copy(
+                                    alpha = 0.3f
+                                ),
+                                onItemSelected = { item ->
+                                    viewmodel.setHours(item)
                                 }
                             )
                             Text(
@@ -520,8 +526,10 @@ fun AddHabitScreen(
                                 textFont = regular,
                                 textWeight = FontWeight.Normal,
                                 selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                                nonSelectedTextColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
-                                onItemSelected = {item->
+                                nonSelectedTextColor = MaterialTheme.colorScheme.onPrimary.copy(
+                                    alpha = 0.3f
+                                ),
+                                onItemSelected = { item ->
                                     viewmodel.setMinutes(item)
                                 }
                             )
@@ -545,8 +553,10 @@ fun AddHabitScreen(
                                 textFont = regular,
                                 textWeight = FontWeight.Normal,
                                 selectedTextColor = MaterialTheme.colorScheme.onPrimary,
-                                nonSelectedTextColor = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f),
-                                onItemSelected = {item->
+                                nonSelectedTextColor = MaterialTheme.colorScheme.onPrimary.copy(
+                                    alpha = 0.3f
+                                ),
+                                onItemSelected = { item ->
                                     viewmodel.setSeconds(item)
                                 }
                             )
@@ -557,16 +567,16 @@ fun AddHabitScreen(
             //link goal
             InputElement {
                 //Text
-                Box(modifier = Modifier.fillMaxWidth()){
+                Box(modifier = Modifier.fillMaxWidth()) {
                     Text(
-                        text = if(state.goal_id == null) "+ Link Goal" else state.goal_name,
+                        text = if (state.goal_id == null) "+ Link Goal" else state.goal_name,
                         style = TextStyle(
                             color = MaterialTheme.colorScheme.onPrimary,
                             fontFamily = regular,
                             fontWeight = FontWeight.Normal,
                             fontSize = 16.sp
                         ),
-                        modifier = Modifier.clickable{
+                        modifier = Modifier.clickable {
                             isShowingGoals = true
                         }
                     )
@@ -575,11 +585,11 @@ fun AddHabitScreen(
             //frequency
             InputElement(
                 title = "Frequency"
-            ){
+            ) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
-                ){
+                ) {
                     Selector(
                         options = Frequency.getTypes().map { it },
                         selectedOption = state.frequency,
@@ -591,7 +601,7 @@ fun AddHabitScreen(
                         selectedOptionColor = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.fillMaxWidth()
                     )
-                    if(state.frequency == Frequency.Weekly){
+                    if (state.frequency == Frequency.Weekly) {
                         WeekDaySelector(
                             daysMap = state.days_of_week,
                             onSelect = {
@@ -599,7 +609,7 @@ fun AddHabitScreen(
                             }
                         )
                     }
-                    if(state.frequency == Frequency.Monthly){
+                    if (state.frequency == Frequency.Monthly) {
                         MonthlyDaySelector(
                             selectedDays = state.daysOfMonth,
                             onDaySelected = {
@@ -610,16 +620,16 @@ fun AddHabitScreen(
                 }
             }
             //Reminder
-            InputElement{
+            InputElement {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(16.dp)
-                ){
+                ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
-                    ){
+                    ) {
                         Text(
                             text = "Reminder",
                             style = TextStyle(
