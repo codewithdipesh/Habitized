@@ -70,6 +70,9 @@ fun WeekDayComponent(
                     fontSize = 22.sp
                 )
             )
+            Text(
+                text = day.date.month.getDisplayName(java.time.format.TextStyle.SHORT,Locale.getDefault()),
+            )
         }
     }
 }
