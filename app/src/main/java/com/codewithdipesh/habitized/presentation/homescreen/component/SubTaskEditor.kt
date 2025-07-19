@@ -21,10 +21,16 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
@@ -169,7 +175,8 @@ fun TodoEditor(
     onToggle : () -> Unit= {},
     onDelete : (UUID) -> Unit = {}
 ) {
-
+    val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
     Row(
         modifier =  modifier.fillMaxWidth()
             .padding(start = 8.dp),
@@ -225,8 +232,15 @@ fun TodoEditor(
                     singleLine = false,
                     maxLines = 3,
                     cursorBrush = SolidColor(colorResource(R.color.primary)),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester).onFocusChanged{
+                        if (it.isFocused) {
+                            keyboardController?.show()
+                        }
+                    }
                 )
+                LaunchedEffect(Unit) {
+                    focusRequester.requestFocus()  // This will request focus when the Composable is first displayed
+                }
                 // Placeholder shown only when title is empty
                 if (todo.title.isEmpty()) {
                     Text(
