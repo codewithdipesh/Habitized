@@ -70,6 +70,16 @@ fun WeekDayComponent(
                     fontSize = 22.sp
                 )
             )
+            Text(
+                text = day.date.month.getDisplayName(java.time.format.TextStyle.SHORT,Locale.getDefault()),
+                style = TextStyle(
+                    color = if(selected) MaterialTheme.colorScheme.outlineVariant
+                    else MaterialTheme.colorScheme.onPrimary,
+                    fontFamily = playfair,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 11.sp
+                )
+            )
         }
     }
 }
