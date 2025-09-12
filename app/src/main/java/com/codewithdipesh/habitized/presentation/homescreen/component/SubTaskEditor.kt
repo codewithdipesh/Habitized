@@ -1,5 +1,10 @@
 package com.codewithdipesh.habitized.presentation.homescreen.component
 
+import android.media.MediaPlayer
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -12,7 +17,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Clear
@@ -22,18 +31,26 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.codewithdipesh.habitized.R
@@ -173,10 +190,29 @@ fun TodoEditor(
     onSurface: Color = MaterialTheme.colorScheme.primary,
     onChange : (String) ->Unit = {},
     onToggle : () -> Unit= {},
-    onDelete : (UUID) -> Unit = {}
+    onDelete : (UUID) -> Unit = {},
+    onAddNewSubTask : () -> Unit = {}
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val context = LocalContext.current
+
+    //scratch sound in completion
+    val mediaPlayer = MediaPlayer.create(context,R.raw.scratch_sound)
+
+    val strikeProgress by animateFloatAsState(
+        targetValue = if(todo.isCompleted && todo.title.isNotEmpty() ) 1f else 0f,
+        animationSpec = tween(durationMillis = 300),
+        label = "strikeThroughAnimation"
+    )
+    var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
+
+    val checkBoxProgress by animateDpAsState(
+        targetValue = if(todo.isCompleted) 16.dp else 0.dp,
+        animationSpec = tween(durationMillis = 150),
+        label = "checkBoxAnimation"
+    )
+
     Row(
         modifier =  modifier.fillMaxWidth()
             .padding(start = 8.dp),
@@ -191,6 +227,7 @@ fun TodoEditor(
         ) {
             Box(
                 modifier = Modifier.size(26.dp)
+                    .clip(RoundedCornerShape(5.dp))
                     .background(
                         if (todo.isCompleted) onSurface
                         else Color.Transparent
@@ -199,9 +236,15 @@ fun TodoEditor(
                         width = 2.dp,
                         color =
                             if (todo.isCompleted) onSurface
-                            else textColor
+                            else textColor,
+                        shape = RoundedCornerShape(5.dp)
                     )
                     .clickable {
+                        //play a scratch sound
+                        if(!todo.isCompleted && todo.title.isNotEmpty()){
+                            mediaPlayer.start()
+                            mediaPlayer.setOnCompletionListener { it.release() }
+                        }
                         onToggle()
                     },
                 contentAlignment = Alignment.Center
@@ -210,13 +253,16 @@ fun TodoEditor(
                     Icon(
                         imageVector = Icons.Filled.Check,
                         contentDescription = "Check",
-                        tint = textColor
+                        tint = textColor,
+                        modifier = Modifier.size(checkBoxProgress)
                     )
                 }
             }
             Spacer(Modifier.width(8.dp))
             //title
-            Box(){
+            Box(
+                modifier = Modifier.fillMaxWidth()
+            ){
                 BasicTextField(
                     value = todo.title,
                     onValueChange = {
@@ -230,9 +276,22 @@ fun TodoEditor(
                         fontSize = textSize.sp
                     ),
                     singleLine = false,
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            onAddNewSubTask()
+                        }
+                    ),
+                    onTextLayout = { result ->
+                        textLayoutResult = result
+                    },
                     maxLines = 3,
                     cursorBrush = SolidColor(colorResource(R.color.primary)),
-                    modifier = Modifier.fillMaxWidth().focusRequester(focusRequester).onFocusChanged{
+                    modifier = Modifier
+                        .wrapContentWidth()
+                        .focusRequester(focusRequester).onFocusChanged{
                         if (it.isFocused) {
                             keyboardController?.show()
                         }
@@ -252,6 +311,34 @@ fun TodoEditor(
                             fontSize = textSize.sp
                         )
                     )
+                }
+
+                //strike animation in canvas
+                Canvas(
+                    modifier = Modifier.matchParentSize()
+                ) {
+                    val layout = textLayoutResult ?: return@Canvas
+                    val lineCount = layout.lineCount
+
+                    for (line in 0 until lineCount) {
+                        val start = layout.getLineLeft(line)
+                        val end = layout.getLineRight(line)
+
+                        val progress = strikeProgress.coerceIn(0f,1f)
+                        val animatedEnd = start + (end - start) * progress
+
+                        val top = layout.getLineTop(line)
+                        val bottom = layout.getLineBottom(line)
+                        val lineHeight = bottom - top
+                        val y = top + lineHeight/ 2f
+
+                        drawLine(
+                            color = textColor.copy(0.7f),
+                            start = Offset(start,y),
+                            end = Offset( animatedEnd,y),
+                            strokeWidth = 2.dp.toPx()
+                        )
+                    }
                 }
             }
 

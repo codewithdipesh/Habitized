@@ -397,6 +397,9 @@ fun HomeScreen(
                                 },
                                 onDelete = {
                                     viewmodel.deleteTodo(it)
+                                },
+                                onAddNewSubTask = {
+                                    viewmodel.addTodo()
                                 }
                             )
                             Spacer(Modifier.height(10.dp))

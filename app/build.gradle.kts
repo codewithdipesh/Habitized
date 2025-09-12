@@ -99,4 +99,7 @@ dependencies {
     //capturable
     implementation("dev.shreyaspatil:capturable:2.1.0")
 
+    //media player
+    runtimeOnly("net.protyposis.android.mediaplayer:mediaplayer:4.5.0")
+
 }
