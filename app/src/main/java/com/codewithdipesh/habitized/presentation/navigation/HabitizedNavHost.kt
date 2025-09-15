@@ -126,7 +126,7 @@ fun HabitizedNavHost(
         ){ entry ->
             val id = entry.arguments?.getString("id")
             val encodedTitle = entry.arguments?.getString("title") ?: ""
-            val title = String(Base64.decode(encodedTitle))
+            val title = String(Base64.UrlSafe.decode(encodedTitle))
             val color = entry.arguments?.getString("color")
             val targetSeconds = entry.arguments?.getString("target")!!.toInt()
 
@@ -185,7 +185,7 @@ fun HabitizedNavHost(
         ){ entry ->
             val id = entry.arguments?.getString("id")
             val encodedTitle = entry.arguments?.getString("title") ?: ""
-            val title = String(Base64.decode(encodedTitle))
+            val title = String(Base64.UrlSafe.decode(encodedTitle))
             val color = entry.arguments?.getString("color")
             val targetSeconds = entry.arguments?.getString("target")!!.toInt()
 
@@ -235,7 +235,7 @@ fun HabitizedNavHost(
         ) {entry->
             val id = entry.arguments?.getString("id")
             val encodedTitle = entry.arguments?.getString("title") ?: ""
-            val title = String(Base64.decode(encodedTitle))
+            val title = String(Base64.UrlSafe.decode(encodedTitle))
             val color = entry.arguments?.getString("color")
 
             HabitDetails(
@@ -265,7 +265,7 @@ fun HabitizedNavHost(
         ) {entry->
             val id = entry.arguments?.getString("id")
             val encodedTitle = entry.arguments?.getString("title") ?: ""
-            val title = String(Base64.decode(encodedTitle))
+            val title = String(Base64.UrlSafe.decode(encodedTitle))
 
             GoalDetails(
                 id = if(id.isNullOrEmpty()) null else UUID.fromString(id),

@@ -21,7 +21,7 @@ sealed class Screen(val route : String){
         @OptIn(ExperimentalEncodingApi::class)
         fun createRoute(habitWithProgress: HabitWithProgress): String {
             val id = habitWithProgress.progress.progressId
-            val title = Base64.encode(habitWithProgress.habit.title.toByteArray())
+            val title = Base64.UrlSafe.encode(habitWithProgress.habit.title.toByteArray())
 
             val time = habitWithProgress.progress.targetDurationValue
             val hour = time!!.hour
@@ -39,7 +39,7 @@ sealed class Screen(val route : String){
         @OptIn(ExperimentalEncodingApi::class)
         fun createRoute(habitWithProgress: HabitWithProgress): String {
             val id = habitWithProgress.progress.progressId
-            val title = Base64.encode(habitWithProgress.habit.title.toByteArray())
+            val title = Base64.UrlSafe.encode(habitWithProgress.habit.title.toByteArray())
 
             val time = habitWithProgress.progress.targetDurationValue
             val hour = time!!.hour
@@ -63,7 +63,7 @@ sealed class Screen(val route : String){
         @OptIn(ExperimentalEncodingApi::class)
         fun createRoute(habit: Habit): String {
             val id = habit.habit_id
-            val title = Base64.encode(habit.title.toByteArray())
+            val title = Base64.UrlSafe.encode(habit.title.toByteArray())
             val color = habit.colorKey
             return "habit_screen/$id/$title/$color"
         }
@@ -73,8 +73,8 @@ sealed class Screen(val route : String){
         @OptIn(ExperimentalEncodingApi::class)
         fun createRoute(goal: Goal?): String {
             val id = goal?.id ?: ""
-            val title = if(goal != null) Base64.encode(goal.title.toByteArray())
-                else Base64.encode("Overall Goal".toByteArray())
+            val title = if(goal != null) Base64.UrlSafe.encode(goal.title.toByteArray())
+                else Base64.UrlSafe.encode("Overall Goal".toByteArray())
             return "goal_screen/$id/$title"
         }
     }
