@@ -63,6 +63,8 @@ import com.codewithdipesh.habitized.presentation.homescreen.component.TodoEditor
 import com.codewithdipesh.habitized.presentation.navigation.Screen
 import com.codewithdipesh.habitized.ui.theme.instrumentSerif
 import com.codewithdipesh.habitized.ui.theme.regular
+import com.codewithdipesh.habitized.data.sharedPref.HabitPreference
+import com.codewithdipesh.habitized.presentation.homescreen.introscreen.IntroDialog
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -74,7 +76,9 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     viewmodel: HomeViewModel,
-    drawerState :DrawerState
+    drawerState: DrawerState,
+    habitPreference: HabitPreference? = null,
+    introVideoUrl: String = ""
 ) {
     val scrollState = rememberScrollState()
     val scope = rememberCoroutineScope()
@@ -97,6 +101,11 @@ fun HomeScreen(
     var habitForShowingAlert by remember { mutableStateOf<HabitWithProgress?>(null) }
 
     var hideJob by remember { mutableStateOf<Job?>(null) }
+
+    // Intro dialog state
+    var showIntroDialog by remember {
+        mutableStateOf(habitPreference?.getIntro(default = true) == true && introVideoUrl.isNotEmpty())
+    }
 
     LaunchedEffect(state.selectedDate) {
         viewmodel.loadHomePage(state.selectedDate)
@@ -211,6 +220,20 @@ fun HomeScreen(
                 onConfirm = {
                     viewmodel.onSkipHabit(it.progress)
                     viewmodel.loadHomePage(state.selectedDate)
+                }
+            )
+        }
+
+        // Intro video dialog for first-time users
+        if (showIntroDialog) {
+            IntroDialog(
+                videoUrl = introVideoUrl,
+                onDismiss = {
+                    habitPreference?.updateIntro(false)
+                    showIntroDialog = false
+                },
+                onVideoEnd = {
+                    habitPreference?.updateIntro(false)
                 }
             )
         }

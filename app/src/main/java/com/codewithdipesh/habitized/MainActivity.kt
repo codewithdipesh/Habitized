@@ -33,16 +33,22 @@ import com.codewithdipesh.habitized.widget.data.HabitWidgetRepository
 import com.google.firebase.Firebase
 import com.google.firebase.analytics.FirebaseAnalytics
 import com.google.firebase.analytics.analytics
+import com.codewithdipesh.habitized.data.sharedPref.HabitPreference
 import dagger.hilt.android.AndroidEntryPoint
-import jakarta.inject.Inject
+import javax.inject.Inject
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 
- @AndroidEntryPoint
+@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    @Inject
+    lateinit var habitPreference: HabitPreference
+
     private lateinit var firebaseAnalytics: FirebaseAnalytics
+
+    private val introVideoUrl = "https://res.cloudinary.com/ds36qo9ws/video/upload/v1766569902/habit_types-into_sgibua.mov"
 
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -112,7 +118,9 @@ class MainActivity : ComponentActivity() {
                         progressViewModel = progressViewModel,
                         habitViewModel = habitViewModel,
                         goalViewModel = goalViewModel,
-                        drawerState = drawerState
+                        drawerState = drawerState,
+                        habitPreference = habitPreference,
+                        introVideoUrl = introVideoUrl
                     )
                 }
             }
