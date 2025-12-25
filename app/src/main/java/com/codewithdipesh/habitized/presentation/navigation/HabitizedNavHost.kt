@@ -34,6 +34,7 @@ import com.codewithdipesh.habitized.presentation.timerscreen.durationScreen.Dura
 import com.codewithdipesh.habitized.presentation.timerscreen.durationScreen.DurationScreen
 import com.codewithdipesh.habitized.presentation.timerscreen.sessionScreen.SessionScreen
 import com.codewithdipesh.habitized.presentation.timerscreen.sessionScreen.SessionViewModel
+import com.codewithdipesh.habitized.data.sharedPref.HabitPreference
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -53,8 +54,11 @@ fun HabitizedNavHost(
     progressViewModel : ProgressViewModel,
     habitViewModel : HabitViewModel,
     goalViewModel : GoalViewModel,
-    drawerState : DrawerState
+    drawerState : DrawerState,
+    habitPreference: HabitPreference,
+    introVideoUrl: String = ""
 ){
+    // Using dialog approach - always start at Home, dialog shows there
     NavHost(
         navController = navController,
         startDestination = Screen.Home.route,
@@ -75,7 +79,9 @@ fun HabitizedNavHost(
             HomeScreen(
                 navController = navController,
                 viewmodel = homeViewModel,
-                drawerState = drawerState
+                drawerState = drawerState,
+                habitPreference = habitPreference,
+                introVideoUrl = introVideoUrl
             )
         }
         composable(

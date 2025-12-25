@@ -102,4 +102,12 @@ dependencies {
     //media player
     runtimeOnly("net.protyposis.android.mediaplayer:mediaplayer:4.5.0")
 
+    //exoplayer for intro video
+    implementation("androidx.media3:media3-exoplayer:1.5.1")
+    implementation("androidx.media3:media3-ui:1.5.1")
+    implementation("androidx.media3:media3-datasource:1.5.1")
+
+    //cardview for video clipping
+    implementation("androidx.cardview:cardview:1.0.0")
+
 }
