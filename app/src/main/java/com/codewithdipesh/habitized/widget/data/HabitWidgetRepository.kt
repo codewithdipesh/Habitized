@@ -15,8 +15,8 @@ class HabitWidgetRepository(
     private val progressDao: HabitProgressDao
 ){
 
-    suspend fun getHabit(habitId : UUID, type : WidgetType) : HabitWidgetInfo {
-        val habit = habitDao.getHabitById(habitId)
+    suspend fun getHabit(habitId : UUID, type : WidgetType) : HabitWidgetInfo? {
+        val habit = habitDao.getHabitById(habitId) ?: return null
         val progresses = progressDao.getHabitProgress(habitId)
         return when(type){
             WidgetType.Weekly -> {

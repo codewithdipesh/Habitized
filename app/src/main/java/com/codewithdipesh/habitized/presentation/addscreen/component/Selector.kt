@@ -51,7 +51,8 @@ fun <T> Selector(
     badgeColor : Color = MaterialTheme.colorScheme.primary,
     badgeText : String = "",
     badgePosition : Alignment = Alignment.TopEnd,
-    shape: Shape = RoundedCornerShape(15.dp)
+    shape: Shape = RoundedCornerShape(15.dp),
+    enabled: Boolean = true
 ) {
     // Remember the width of the Selector container
     var containerWidth by remember { mutableStateOf(0) }
@@ -105,7 +106,8 @@ fun <T> Selector(
                         .fillMaxHeight()
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
-                            indication = null
+                            indication = null,
+                            enabled = enabled
                         ) {
                             onOptionSelected(option)
                         },
@@ -114,7 +116,11 @@ fun <T> Selector(
                     Text(
                         text = option.toString(),
                         style = TextStyle(
-                            color = if (option == selectedOption) selectedTextColor else selectedTextColor.copy(0.8f),
+                            color = if (option == selectedOption) {
+                                if (enabled) selectedTextColor else selectedTextColor.copy(0.5f)
+                            } else {
+                                if (enabled) selectedTextColor.copy(0.8f) else selectedTextColor.copy(0.4f)
+                            },
                             fontFamily = instrumentSerif,
                             fontWeight = FontWeight.Bold,
                             fontStyle = FontStyle.Italic,

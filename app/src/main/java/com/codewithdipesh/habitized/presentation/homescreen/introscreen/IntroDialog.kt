@@ -349,7 +349,7 @@ fun IntroDialog(
                                 else
                                     MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)
                             )
-                            .clickable(enabled = state == IntroDialogState.ENDED) {
+                            .clickable(enabled = isSkippable) {
                                 onDismiss()
                             },
                         contentAlignment = Alignment.Center

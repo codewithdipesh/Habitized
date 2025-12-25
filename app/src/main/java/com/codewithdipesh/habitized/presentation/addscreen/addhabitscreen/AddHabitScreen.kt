@@ -365,7 +365,6 @@ fun AddHabitScreen(
                             options = HabitType.getHabitTypes().map { it },
                             selectedOption = state.type,
                             onOptionSelected = {
-                                //todo reset timer and count viewmodel.setTargetCount(0)
                                 viewmodel.setType(it)
                             },
                             showBadge = true,
@@ -374,7 +373,8 @@ fun AddHabitScreen(
                             backgroundColor = MaterialTheme.colorScheme.surfaceVariant,
                             selectedTextColor = MaterialTheme.colorScheme.onPrimary,
                             selectedOptionColor = MaterialTheme.colorScheme.tertiary,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            enabled = !state.isEditMode
                         )
 
                         //input of targets

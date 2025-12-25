@@ -35,6 +35,13 @@ class WeeklyHabitWidget (): GlanceAppWidget() {
         val repository = entryPoint.habitWidgetRepository()
         val habitInfo = repository.getHabit(habitId, WidgetType.Weekly)
 
+        if (habitInfo == null) {
+            provideContent {
+                LoadingContent()
+            }
+            return
+        }
+
         provideContent {
             WeeklyHabitWidgetContent(habitInfo)
         }
@@ -61,6 +68,13 @@ class MonthlyHabitWidget() : GlanceAppWidget() {
         )
         val repository = entryPoint.habitWidgetRepository()
         val habitInfo = repository.getHabit(habitId, WidgetType.Overall)
+
+        if (habitInfo == null) {
+            provideContent {
+                LoadingContent()
+            }
+            return
+        }
 
         provideContent {
             OverAllHabitWidgetContent(habitInfo)

@@ -56,7 +56,14 @@ class HabitRepoImpl(
     }
 
     override suspend fun addOrUpdateHabit(habit: Habit) {
-        habitDao.insertHabit(habit.toEntity())
+        val existingHabit = habit.habit_id?.let { habitDao.getHabitById(it) }
+        if (existingHabit != null) {
+            // Update existing habit - preserves foreign key relations (progress, subtasks, etc.)
+            habitDao.updateHabit(habit.toEntity())
+        } else {
+            // Insert new habit
+            habitDao.insertHabit(habit.toEntity())
+        }
     }
     override suspend fun deleteHabit(habitId: UUID) {
         habitDao.deleteHabit(habitId)
@@ -122,6 +129,7 @@ class HabitRepoImpl(
     override suspend fun getHabitProgressById(habitProgressId: UUID): HabitWithProgress {
         val response =  habitProgressDao.getHabitProgressById(habitProgressId)
         val habit = habitDao.getHabitById(response.habitId)
+            ?: throw IllegalStateException("Habit not found for progress $habitProgressId")
         val subtasks = subtaskDao.getSubtasksByHabitProgressId(habitProgressId)
         return HabitWithProgress(
             habit = habit.toHabit(),
