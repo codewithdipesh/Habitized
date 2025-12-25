@@ -16,10 +16,11 @@ import java.time.format.DateTimeFormatter
 import java.util.UUID
 
 data class AddHabitUI(
-    val habit_id: UUID = UUID.randomUUID(),
+    val habit_id: UUID? = null,
     val title: String = "",
     val description: String = "",
     val type: HabitType = HabitType.OneTime,
+    val isEditMode: Boolean = false,
     val goal_id: UUID? = null,
     val goal_name: String = "",
     val start_date: LocalDate = LocalDate.now(),

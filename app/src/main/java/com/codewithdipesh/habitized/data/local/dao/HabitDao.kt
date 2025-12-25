@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 import com.codewithdipesh.habitized.data.local.entity.HabitEntity
 import com.codewithdipesh.habitized.domain.model.Frequency
 import kotlinx.coroutines.flow.Flow
@@ -12,11 +13,14 @@ import java.util.UUID
 
 @Dao
 interface HabitDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.ABORT)
     suspend fun insertHabit(habit: HabitEntity)
 
+    @Update
+    suspend fun updateHabit(habit: HabitEntity)
+
     @Query("SELECT * FROM habits WHERE habit_id = :habitId")
-    suspend fun getHabitById(habitId: UUID): HabitEntity
+    suspend fun getHabitById(habitId: UUID): HabitEntity?
 
     @Query("SELECT * FROM habits")
     suspend fun getAllHabits(): List<HabitEntity>
