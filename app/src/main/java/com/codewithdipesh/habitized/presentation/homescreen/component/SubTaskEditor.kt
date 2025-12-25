@@ -30,6 +30,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -191,14 +192,22 @@ fun TodoEditor(
     onChange : (String) ->Unit = {},
     onToggle : () -> Unit= {},
     onDelete : (UUID) -> Unit = {},
-    onAddNewSubTask : () -> Unit = {}
+    onAddNewSubTask : () -> Unit = {},
+    shouldRequestFocus: Boolean = false
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
     val context = LocalContext.current
 
-    //scratch sound in completion
-    val mediaPlayer = MediaPlayer.create(context,R.raw.scratch_sound)
+    //scratch sound in completion - properly managed with remember and DisposableEffect
+    val mediaPlayer = remember {
+        MediaPlayer.create(context, R.raw.scratch_sound)
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            mediaPlayer.release()
+        }
+    }
 
     val strikeProgress by animateFloatAsState(
         targetValue = if(todo.isCompleted && todo.title.isNotEmpty() ) 1f else 0f,
@@ -297,8 +306,11 @@ fun TodoEditor(
                         }
                     }
                 )
-                LaunchedEffect(Unit) {
-                    focusRequester.requestFocus()  // This will request focus when the Composable is first displayed
+                // Only request focus for newly added todos
+                if (shouldRequestFocus) {
+                    LaunchedEffect(Unit) {
+                        focusRequester.requestFocus()
+                    }
                 }
                 // Placeholder shown only when title is empty
                 if (todo.title.isEmpty()) {

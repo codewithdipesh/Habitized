@@ -17,9 +17,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,7 +32,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -80,7 +83,7 @@ fun HomeScreen(
     habitPreference: HabitPreference? = null,
     introVideoUrl: String = ""
 ) {
-    val scrollState = rememberScrollState()
+    val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     var previousScrollOffset by remember { mutableStateOf(0) }
@@ -110,25 +113,39 @@ fun HomeScreen(
     LaunchedEffect(state.selectedDate) {
         viewmodel.loadHomePage(state.selectedDate)
     }
-    LaunchedEffect(scrollState.isScrollInProgress) {
-        if(state.isShowingDatePicker && scrollState.isScrollInProgress){
+    LaunchedEffect(lazyListState.isScrollInProgress) {
+        if(state.isShowingDatePicker && lazyListState.isScrollInProgress){
             viewmodel.closeDatePicker()
         }
     }
-    LaunchedEffect(scrollState.value) {
-        val currentOffset = scrollState.value
-        showingDateTitle = currentOffset <= 10
+
+    // Derived state for scroll position tracking
+    val isAtTop by remember {
+        derivedStateOf {
+            lazyListState.firstVisibleItemIndex == 0 &&
+            lazyListState.firstVisibleItemScrollOffset <= 10
+        }
+    }
+
+    val currentScrollOffset by remember {
+        derivedStateOf {
+            lazyListState.firstVisibleItemIndex * 1000 + lazyListState.firstVisibleItemScrollOffset
+        }
+    }
+
+    LaunchedEffect(currentScrollOffset) {
+        showingDateTitle = isAtTop
 
         if(showingDateTitle){
             showingOptionSelector = true
         }else{
-            if( currentOffset > previousScrollOffset || currentOffset == scrollState.maxValue){
+            if(currentScrollOffset > previousScrollOffset){
                 showingOptionSelector = false
             }else{
                 showingOptionSelector = true
             }
         }
-        previousScrollOffset = currentOffset
+        previousScrollOffset = currentScrollOffset
     }
     LaunchedEffect(state.isShowingDatePicker){
         if(state.isShowingDatePicker && hideJob == null){
@@ -244,12 +261,13 @@ fun HomeScreen(
             .padding(innerPadding)
             .padding(horizontal = 16.dp)
             .padding(bottom = 80.dp)
+            .imePadding()
         ){
             val date = state.selectedDate.format(
                 DateTimeFormatter.ofPattern("dd MMM")
             )
 
-            AnimatedVisibility(showingDateTitle) {
+            AnimatedVisibility(showingDateTitle  || state.selectedOption == HomeScreenOption.Todos) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 8.dp)
@@ -292,155 +310,167 @@ fun HomeScreen(
                     }
                 }
             }
-            AnimatedVisibility(showingOptionSelector) {
+            AnimatedVisibility(showingOptionSelector || state.selectedOption == HomeScreenOption.Todos) {
                 OptionSelector(
                     selectedOption = state.selectedOption,
                     onOptionSelected = {viewmodel.onOptionSelected(it)}
                 )
             }
             Spacer(Modifier.height(16.dp))
-            //habits
-            Column(modifier = Modifier.verticalScroll(
-                scrollState,
+            // Auto-scroll to last todo when a new one is added
+            LaunchedEffect(state.todos.size) {
+                if (state.todos.isNotEmpty() && state.selectedOption == HomeScreenOption.Todos) {
+                    lazyListState.animateScrollToItem(state.todos.size + 1)
+                }
+            }
+            //habits and todos - using LazyColumn for performance
+            LazyColumn(
+                state = lazyListState,
                 flingBehavior = ScrollableDefaults.flingBehavior()
-            )
             ) {
                 if(state.selectedOption == HomeScreenOption.Habits){
                     //no started / ongoing
-                    state.habitWithProgressList
-                        .filter { it.progress.status == Status.NotStarted }
-                        .forEach{ habit->
-                            key(habit.habit.habit_id){
-                                HabitCard(
-                                    habitWithProgress = habit,
-                                    onSubTaskAdding = {
-                                        showingSubtaskAdding = true
-                                        habitForSubTaskAdding = it
-                                    },
-                                    onToggle = {
-                                        viewmodel.toggleSubtask(it)
-                                    },
-                                    onSkip = {
-                                        showingSkipAlert = true
-                                        habitForShowingAlert = it
-                                    },
-                                    onDone = {
-                                        scope.launch {
-                                            viewmodel.onDoneHabit(it)
-                                            viewmodel.loadHomePage(state.selectedDate)
-                                        }
-                                    },
-                                    onAddCounter = {
-                                        showingCounter = true
-                                        habitForCounter = it
-                                    },
-                                    onStartDuration = {
-                                        if(state.ongoingHabit != null && it != state.ongoingHabit ){
-                                            scope.launch {
-                                                Toast.makeText(context,"Already Habit Running", Toast.LENGTH_SHORT).show()
-                                            }
-                                        }else{
-                                            navController.navigate(Screen.DurationScreen.createRoute(it))
-                                        }
-                                    },
-                                    onStartSession = {
-                                        if(state.ongoingHabit != null && it != state.ongoingHabit ){
-                                            scope.launch {
-                                                Toast.makeText(context,"Already Habit Running", Toast.LENGTH_SHORT).show()
-                                            }
-                                        }else{
-                                            navController.navigate(Screen.SessionScreen.createRoute(it))
-                                        }
-                                    },
-                                    onFutureTaskStateChange = {
-                                        scope.launch {
-                                            Toast.makeText(context,"Can't start Future Tasks", Toast.LENGTH_SHORT).show()
-                                        }
-                                    },
-                                    onHabitClick = {
-                                        navController.navigate(Screen.HabitScreen.createRoute(it))
+                    items(
+                        items = state.habitWithProgressList.filter { it.progress.status == Status.NotStarted },
+                        key = { it.habit.habit_id!! }
+                    ) { habit ->
+                        HabitCard(
+                            habitWithProgress = habit,
+                            onSubTaskAdding = {
+                                showingSubtaskAdding = true
+                                habitForSubTaskAdding = it
+                            },
+                            onToggle = {
+                                viewmodel.toggleSubtask(it)
+                            },
+                            onSkip = {
+                                showingSkipAlert = true
+                                habitForShowingAlert = it
+                            },
+                            onDone = {
+                                scope.launch {
+                                    viewmodel.onDoneHabit(it)
+                                    viewmodel.loadHomePage(state.selectedDate)
+                                }
+                            },
+                            onAddCounter = {
+                                showingCounter = true
+                                habitForCounter = it
+                            },
+                            onStartDuration = {
+                                if(state.ongoingHabit != null && it != state.ongoingHabit ){
+                                    scope.launch {
+                                        Toast.makeText(context,"Already Habit Running", Toast.LENGTH_SHORT).show()
                                     }
-                                )
-                                Spacer(Modifier.height(16.dp))
-                            }
-                        }
-                    //finished or skipped //todo
-                    state.habitWithProgressList
-                        .filter { it.progress.status != Status.NotStarted }
-                        .forEach{ habit->
-                            key(habit.habit.habit_id){
-                                HabitCard(
-                                    habitWithProgress = habit,
-                                    onSubTaskAdding = {
-                                        showingSubtaskAdding = true
-                                        habitForSubTaskAdding = it
-                                    },
-                                    onToggle = {
-                                        viewmodel.toggleSubtask(it)
-                                    },
-                                    onUnSkip = {
-                                        scope.launch {
-                                            viewmodel.onUnSkipDoneHabit(it)
-                                            viewmodel.loadHomePage(state.selectedDate)
-                                        }
-                                    },
-                                    onAddCounter = {
-                                        showingCounter = true
-                                        habitForCounter = it
-                                    },
-                                    onFutureTaskStateChange = {
-                                        scope.launch {
-                                            Toast.makeText(context,"Can't start Future Tasks", Toast.LENGTH_SHORT).show()
-                                        }
-                                    },
-                                    onHabitClick = {
-                                        navController.navigate(Screen.HabitScreen.createRoute(it))
+                                }else{
+                                    navController.navigate(Screen.DurationScreen.createRoute(it))
+                                }
+                            },
+                            onStartSession = {
+                                if(state.ongoingHabit != null && it != state.ongoingHabit ){
+                                    scope.launch {
+                                        Toast.makeText(context,"Already Habit Running", Toast.LENGTH_SHORT).show()
                                     }
-                                )
-                                Spacer(Modifier.height(16.dp))
+                                }else{
+                                    navController.navigate(Screen.SessionScreen.createRoute(it))
+                                }
+                            },
+                            onFutureTaskStateChange = {
+                                scope.launch {
+                                    Toast.makeText(context,"Can't start Future Tasks", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onHabitClick = {
+                                navController.navigate(Screen.HabitScreen.createRoute(it))
                             }
-                        }
+                        )
+                        Spacer(Modifier.height(16.dp))
+                    }
+                    //finished or skipped
+                    items(
+                        items = state.habitWithProgressList.filter { it.progress.status != Status.NotStarted },
+                        key = { it.habit.habit_id!! }
+                    ) { habit ->
+                        HabitCard(
+                            habitWithProgress = habit,
+                            onSubTaskAdding = {
+                                showingSubtaskAdding = true
+                                habitForSubTaskAdding = it
+                            },
+                            onToggle = {
+                                viewmodel.toggleSubtask(it)
+                            },
+                            onUnSkip = {
+                                scope.launch {
+                                    viewmodel.onUnSkipDoneHabit(it)
+                                    viewmodel.loadHomePage(state.selectedDate)
+                                }
+                            },
+                            onAddCounter = {
+                                showingCounter = true
+                                habitForCounter = it
+                            },
+                            onFutureTaskStateChange = {
+                                scope.launch {
+                                    Toast.makeText(context,"Can't start Future Tasks", Toast.LENGTH_SHORT).show()
+                                }
+                            },
+                            onHabitClick = {
+                                navController.navigate(Screen.HabitScreen.createRoute(it))
+                            }
+                        )
+                        Spacer(Modifier.height(16.dp))
+                    }
 
                     //if showing ongoing timer then padding
                     if(state.ongoingHabit != null){
-                        Spacer(Modifier.height(150.dp))
+                        item {
+                            Spacer(Modifier.height(150.dp))
+                        }
                     }
                 }
                 else{//todos
-                    Spacer(Modifier.height(16.dp))
-                    state.todos
-                        .forEach { todo->
-                            TodoEditor(
-                                todo = todo,
-                                onChange = {
-                                    viewmodel.updateTodo(it,todo.taskId)
-                                },
-                                onToggle = {
-                                    viewmodel.toggleTodo(todo.taskId)
-                                },
-                                onDelete = {
-                                    viewmodel.deleteTodo(it)
-                                },
-                                onAddNewSubTask = {
+                    item {
+                        Spacer(Modifier.height(16.dp))
+                    }
+                    itemsIndexed(
+                        items = state.todos,
+                        key = { _, todo -> todo.taskId }
+                    ) { index, todo ->
+                        TodoEditor(
+                            todo = todo,
+                            onChange = {
+                                viewmodel.updateTodo(it, todo.taskId)
+                            },
+                            onToggle = {
+                                viewmodel.toggleTodo(todo.taskId)
+                            },
+                            onDelete = {
+                                viewmodel.deleteTodo(it)
+                            },
+                            onAddNewSubTask = {
+                                viewmodel.addTodo()
+                            },
+                            shouldRequestFocus = index == state.todos.lastIndex && todo.title.isEmpty()
+                        )
+                        Spacer(Modifier.height(10.dp))
+                    }
+                    item {
+                        Text(
+                            text = "+ Add Todos",
+                            style = TextStyle(
+                                color = MaterialTheme.colorScheme.scrim,
+                                fontFamily = regular,
+                                fontWeight = FontWeight.Normal,
+                                fontSize = 16.sp
+                            ),
+                            modifier = Modifier
+                                .padding(start = 8.dp)
+                                .clickable{
                                     viewmodel.addTodo()
                                 }
-                            )
-                            Spacer(Modifier.height(10.dp))
-                        }
-                    Text(
-                        text = "+ Add Todos",
-                        style = TextStyle(
-                            color = MaterialTheme.colorScheme.scrim,
-                            fontFamily = regular,
-                            fontWeight = FontWeight.Normal,
-                            fontSize = 16.sp
-                        ),
-                        modifier = Modifier
-                            .padding(start = 8.dp)
-                            .clickable{
-                                viewmodel.addTodo()
-                            }
-                    )
+                        )
+                    }
                 }
             }
 
