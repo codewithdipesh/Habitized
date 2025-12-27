@@ -57,4 +57,7 @@ interface HabitDao {
 
     @Query("UPDATE habits SET goal_id = NULL WHERE habit_id = :habitId")
     suspend fun removeGoalFromHabit(habitId: UUID)
+
+    @Query("DELETE FROM habits")
+    suspend fun deleteAllHabits()
 }

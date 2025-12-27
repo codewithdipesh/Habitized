@@ -24,4 +24,10 @@ interface SubTaskDao {
 
     @Query("UPDATE sub_tasks SET isCompleted = not isCompleted WHERE subtaskId = :subtaskId")
     suspend fun updateSubtaskCompletion(subtaskId: UUID)
+
+    @Query("SELECT * FROM sub_tasks")
+    suspend fun getAllSubtasks(): List<SubtaskEntity>
+
+    @Query("DELETE FROM sub_tasks")
+    suspend fun deleteAllSubtasks()
 }

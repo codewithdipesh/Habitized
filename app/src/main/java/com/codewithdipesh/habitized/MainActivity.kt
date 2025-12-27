@@ -17,9 +17,11 @@ import androidx.lifecycle.lifecycleScope
 import androidx.navigation.compose.rememberNavController
 import com.codewithdipesh.habitized.domain.model.Goal
 import com.codewithdipesh.habitized.presentation.addscreen.AddViewModel
+import com.codewithdipesh.habitized.presentation.backup.BackupViewModel
 import com.codewithdipesh.habitized.presentation.goalscreen.GoalViewModel
 import com.codewithdipesh.habitized.presentation.habitscreen.HabitViewModel
 import com.codewithdipesh.habitized.presentation.homescreen.HomeViewModel
+import com.codewithdipesh.habitized.presentation.navigation.Screen
 import com.codewithdipesh.habitized.presentation.homescreen.component.AppDrawer
 import com.codewithdipesh.habitized.presentation.homescreen.component.DrawerItem
 import com.codewithdipesh.habitized.presentation.navigation.HabitizedNavHost
@@ -79,6 +81,7 @@ class MainActivity : ComponentActivity() {
                 val progressViewModel by viewModels<ProgressViewModel>()
                 val habitViewModel by viewModels<HabitViewModel>()
                 val goalViewModel by viewModels<GoalViewModel>()
+                val backupViewModel by viewModels<BackupViewModel>()
 
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
@@ -88,6 +91,9 @@ class MainActivity : ComponentActivity() {
                     },
                     DrawerItem(R.drawable.widget,"Add Widgets"){
                         homeViewModel.addWidget(navController)
+                    },
+                    DrawerItem(R.drawable.backup_icon,"Backup & Restore"){
+                        navController.navigate(Screen.BackupScreen.route)
                     },
                     DrawerItem(R.drawable.send_icoc,"Share with Friends"){
                         homeViewModel.shareApp(this)
@@ -118,6 +124,7 @@ class MainActivity : ComponentActivity() {
                         progressViewModel = progressViewModel,
                         habitViewModel = habitViewModel,
                         goalViewModel = goalViewModel,
+                        backupViewModel = backupViewModel,
                         drawerState = drawerState,
                         habitPreference = habitPreference,
                         introVideoUrl = introVideoUrl
