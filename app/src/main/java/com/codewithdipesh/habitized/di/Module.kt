@@ -2,6 +2,10 @@ package com.codewithdipesh.habitized.di
 
 import android.content.Context
 import com.codewithdipesh.habitized.data.alarmManager.AndroidAlarmScheduler
+import com.codewithdipesh.habitized.data.backup.manager.BackupManager
+import com.codewithdipesh.habitized.data.backup.manager.ImageBackupManager
+import com.codewithdipesh.habitized.data.backup.repository.BackupRepository
+import com.codewithdipesh.habitized.data.backup.repository.BackupRepositoryImpl
 import com.codewithdipesh.habitized.data.local.AppDatabase
 import com.codewithdipesh.habitized.data.local.dao.GoalDao
 import com.codewithdipesh.habitized.data.local.dao.HabitDao
@@ -93,6 +97,47 @@ object Module {
         progressDao: HabitProgressDao
     ): HabitWidgetRepository =
         HabitWidgetRepository(habitDao, progressDao)
+
+    @Provides
+    @Singleton
+    fun provideImageBackupManager(@ApplicationContext context: Context): ImageBackupManager {
+        return ImageBackupManager(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideBackupManager(
+        @ApplicationContext context: Context,
+        habitDao: HabitDao,
+        habitProgressDao: HabitProgressDao,
+        goalDao: GoalDao,
+        subtaskDao: SubTaskDao,
+        imageProgressDao: ImageProgressDao,
+        oneTimeTaskDao: OneTimeTaskDao,
+        imageBackupManager: ImageBackupManager,
+        habitPreference: HabitPreference
+    ): BackupManager {
+        return BackupManager(
+            context = context,
+            habitDao = habitDao,
+            habitProgressDao = habitProgressDao,
+            goalDao = goalDao,
+            subtaskDao = subtaskDao,
+            imageProgressDao = imageProgressDao,
+            oneTimeTaskDao = oneTimeTaskDao,
+            imageBackupManager = imageBackupManager,
+            habitPreference = habitPreference
+        )
+    }
+
+    @Provides
+    @Singleton
+    fun provideBackupRepository(
+        backupManager: BackupManager,
+        habitPreference: HabitPreference
+    ): BackupRepository {
+        return BackupRepositoryImpl(backupManager, habitPreference)
+    }
 
 }
 

@@ -19,6 +19,8 @@ import androidx.navigation.navDeepLink
 import com.codewithdipesh.habitized.presentation.addscreen.AddViewModel
 import com.codewithdipesh.habitized.presentation.addscreen.addGoalScreen.AddGoalScreen
 import com.codewithdipesh.habitized.presentation.addscreen.addhabitscreen.AddHabitScreen
+import com.codewithdipesh.habitized.presentation.backup.BackupScreen
+import com.codewithdipesh.habitized.presentation.backup.BackupViewModel
 import com.codewithdipesh.habitized.presentation.drawer.AddWidgetScreen
 import com.codewithdipesh.habitized.presentation.drawer.ThoughtsScreen
 import com.codewithdipesh.habitized.presentation.goalscreen.GoalDetails
@@ -54,6 +56,7 @@ fun HabitizedNavHost(
     progressViewModel : ProgressViewModel,
     habitViewModel : HabitViewModel,
     goalViewModel : GoalViewModel,
+    backupViewModel : BackupViewModel,
     drawerState : DrawerState,
     habitPreference: HabitPreference,
     introVideoUrl: String = ""
@@ -278,6 +281,12 @@ fun HabitizedNavHost(
                 title = title!!,
                 navController = navController,
                 viewmodel = goalViewModel
+            )
+        }
+        composable(Screen.BackupScreen.route) {
+            BackupScreen(
+                navController = navController,
+                viewModel = backupViewModel
             )
         }
     }

@@ -40,6 +40,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true
     }
 }
 
@@ -109,5 +110,13 @@ dependencies {
 
     //cardview for video clipping
     implementation("androidx.cardview:cardview:1.0.0")
+
+    //workmanager for scheduled backup
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.hilt:hilt-work:1.2.0")
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
+
+    //gson for JSON serialization
+    implementation("com.google.code.gson:gson:2.10.1")
 
 }

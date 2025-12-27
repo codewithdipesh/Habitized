@@ -25,4 +25,13 @@ interface ImageProgressDao {
 
     @Query("DELETE FROM imageProgress WHERE habitId = :habitId")
     suspend fun deleteAllForHabit(habitId: UUID)
+
+    @Query("SELECT * FROM imageProgress")
+    suspend fun getAllImageProgress(): List<ImageProgressEntity>
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insert(imageProgressEntity: ImageProgressEntity)
+
+    @Query("DELETE FROM imageProgress")
+    suspend fun deleteAll()
 }

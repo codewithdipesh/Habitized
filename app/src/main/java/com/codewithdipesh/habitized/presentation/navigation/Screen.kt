@@ -78,4 +78,5 @@ sealed class Screen(val route : String){
             return "goal_screen/$id/$title"
         }
     }
+    object BackupScreen : Screen("backup")
 }

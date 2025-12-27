@@ -25,4 +25,10 @@ interface OneTimeTaskDao {
 
     @Query("UPDATE one_time_tasks SET isCompleted = not isCompleted WHERE taskId = :taskId")
     suspend fun updateTaskCompletion(taskId: UUID)
+
+    @Query("SELECT * FROM one_time_tasks")
+    suspend fun getAllTasks(): List<OneTimeTaskEntity>
+
+    @Query("DELETE FROM one_time_tasks")
+    suspend fun deleteAllTasks()
 }

@@ -56,5 +56,9 @@ interface HabitProgressDao {
     @Query("SELECT EXISTS(SELECT 1 FROM habit_progress WHERE habitId = :habitId AND date = :date AND status = :status)")
     suspend fun checkDoneOrNot(habitId: UUID,date: LocalDate,status: String = Status.Done.displayName) : Boolean
 
+    @Query("SELECT * FROM habit_progress")
+    suspend fun getAllProgress(): List<HabitProgressEntity>
 
+    @Query("DELETE FROM habit_progress")
+    suspend fun deleteAllProgress()
 }
