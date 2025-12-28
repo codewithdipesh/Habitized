@@ -86,9 +86,6 @@ class MainActivity : ComponentActivity() {
                 val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
 
                 val SecondSectionItems = listOf(
-                    DrawerItem(R.drawable.my_thoughts,"My Thoughts"){
-                        homeViewModel.getMyThoughts(navController)
-                    },
                     DrawerItem(R.drawable.widget,"Add Widgets"){
                         homeViewModel.addWidget(navController)
                     },
@@ -97,6 +94,9 @@ class MainActivity : ComponentActivity() {
                     },
                     DrawerItem(R.drawable.send_icoc,"Share with Friends"){
                         homeViewModel.shareApp(this)
+                    },
+                    DrawerItem(R.drawable.my_thoughts,"Creator's Thoughts"){
+                        homeViewModel.getMyThoughts(navController)
                     },
                     DrawerItem(R.drawable.report_bug,"Report a bug"){
                         homeViewModel.openMail(this)

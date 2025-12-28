@@ -1,5 +1,6 @@
 package com.codewithdipesh.habitized.presentation.homescreen
 
+import android.media.MediaPlayer
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -8,6 +9,7 @@ import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.ScrollableDefaults
 import androidx.compose.foundation.layout.Box
@@ -29,15 +31,16 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -110,6 +113,28 @@ fun HomeScreen(
         mutableStateOf(habitPreference?.getIntro(default = true) == true && introVideoUrl.isNotEmpty())
     }
 
+    // Shared MediaPlayer for todo completion sound (created once, shared across all todos)
+    val scratchSoundPlayer = remember { MediaPlayer.create(context, R.raw.scratch_sound) }
+    DisposableEffect(Unit) {
+        onDispose {
+            scratchSoundPlayer?.release()
+        }
+    }
+    val playScratchSound: () -> Unit = remember {
+        {
+            try {
+                scratchSoundPlayer?.let { player ->
+                    if (player.isPlaying) {
+                        player.seekTo(0)
+                    }
+                    player.start()
+                }
+            } catch (e: Exception) {
+                // Ignore sound errors
+            }
+        }
+    }
+
     LaunchedEffect(state.selectedDate) {
         viewmodel.loadHomePage(state.selectedDate)
     }
@@ -119,33 +144,22 @@ fun HomeScreen(
         }
     }
 
-    // Derived state for scroll position tracking
-    val isAtTop by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex == 0 &&
-            lazyListState.firstVisibleItemScrollOffset <= 10
-        }
-    }
+    // Optimized scroll tracking using snapshotFlow (no recomposition during scroll)
+    LaunchedEffect(lazyListState) {
+        snapshotFlow {
+            lazyListState.firstVisibleItemIndex to lazyListState.firstVisibleItemScrollOffset
+        }.collect { (index, offset) ->
+            val isAtTop = index == 0 && offset <= 10
+            showingDateTitle = isAtTop
 
-    val currentScrollOffset by remember {
-        derivedStateOf {
-            lazyListState.firstVisibleItemIndex * 1000 + lazyListState.firstVisibleItemScrollOffset
-        }
-    }
-
-    LaunchedEffect(currentScrollOffset) {
-        showingDateTitle = isAtTop
-
-        if(showingDateTitle){
-            showingOptionSelector = true
-        }else{
-            if(currentScrollOffset > previousScrollOffset){
-                showingOptionSelector = false
-            }else{
+            val currentOffset = index * 1000 + offset
+            if (isAtTop) {
                 showingOptionSelector = true
+            } else {
+                showingOptionSelector = currentOffset <= previousScrollOffset
             }
+            previousScrollOffset = currentOffset
         }
-        previousScrollOffset = currentScrollOffset
     }
     LaunchedEffect(state.isShowingDatePicker){
         if(state.isShowingDatePicker && hideJob == null){
@@ -451,7 +465,8 @@ fun HomeScreen(
                             onAddNewSubTask = {
                                 viewmodel.addTodo()
                             },
-                            shouldRequestFocus = index == state.todos.lastIndex && todo.title.isEmpty()
+                            shouldRequestFocus = index == state.todos.lastIndex && todo.title.isEmpty(),
+                            onPlaySound = playScratchSound
                         )
                         Spacer(Modifier.height(10.dp))
                     }

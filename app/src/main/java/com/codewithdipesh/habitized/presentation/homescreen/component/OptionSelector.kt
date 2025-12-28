@@ -51,7 +51,7 @@ fun OptionSelector(
                 .height(40.dp)
                 .clip(RoundedCornerShape(50.dp))
                 .background(color =
-                    if (selectedOption == HomeScreenOption.Habits) MaterialTheme.colorScheme.onPrimary
+                    if (selectedOption == HomeScreenOption.Habits) MaterialTheme.colorScheme.onTertiary
                     else MaterialTheme.colorScheme.secondary,
                     shape = RoundedCornerShape(50.dp)
                 )
@@ -82,7 +82,7 @@ fun OptionSelector(
                 .height(40.dp)
                 .clip(RoundedCornerShape(50.dp))
                 .background(color =
-                    if (selectedOption == HomeScreenOption.Todos) MaterialTheme.colorScheme.onPrimary
+                    if (selectedOption == HomeScreenOption.Todos) MaterialTheme.colorScheme.onTertiary
                     else MaterialTheme.colorScheme.secondary,
                     shape = RoundedCornerShape(50.dp)
                 )
