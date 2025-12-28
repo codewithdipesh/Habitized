@@ -1,6 +1,5 @@
 package com.codewithdipesh.habitized.presentation.homescreen.component
 
-import android.media.MediaPlayer
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -30,7 +29,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -45,7 +43,6 @@ import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextLayoutResult
@@ -193,21 +190,11 @@ fun TodoEditor(
     onToggle : () -> Unit= {},
     onDelete : (UUID) -> Unit = {},
     onAddNewSubTask : () -> Unit = {},
-    shouldRequestFocus: Boolean = false
+    shouldRequestFocus: Boolean = false,
+    onPlaySound: () -> Unit = {}
 ) {
     val focusRequester = remember { FocusRequester() }
     val keyboardController = LocalSoftwareKeyboardController.current
-    val context = LocalContext.current
-
-    //scratch sound in completion - properly managed with remember and DisposableEffect
-    val mediaPlayer = remember {
-        MediaPlayer.create(context, R.raw.scratch_sound)
-    }
-    DisposableEffect(Unit) {
-        onDispose {
-            mediaPlayer.release()
-        }
-    }
 
     val strikeProgress by animateFloatAsState(
         targetValue = if(todo.isCompleted && todo.title.isNotEmpty() ) 1f else 0f,
@@ -216,11 +203,22 @@ fun TodoEditor(
     )
     var textLayoutResult by remember { mutableStateOf<TextLayoutResult?>(null) }
 
+    // Cache colors to avoid recreation on each recomposition
+    val strikeColor = remember(textColor) { textColor.copy(0.7f) }
+    val placeholderColor = remember(textColor) { textColor.copy(0.3f) }
+    val completedTextColor = remember(textColor) { textColor.copy(0.7f) }
+
     val checkBoxProgress by animateDpAsState(
         targetValue = if(todo.isCompleted) 16.dp else 0.dp,
         animationSpec = tween(durationMillis = 150),
         label = "checkBoxAnimation"
     )
+
+    LaunchedEffect(shouldRequestFocus) {
+        if (shouldRequestFocus){
+            focusRequester.requestFocus()
+        }
+    }
 
     Row(
         modifier =  modifier.fillMaxWidth()
@@ -251,8 +249,7 @@ fun TodoEditor(
                     .clickable {
                         //play a scratch sound
                         if(!todo.isCompleted && todo.title.isNotEmpty()){
-                            mediaPlayer.start()
-                            mediaPlayer.setOnCompletionListener { it.release() }
+                            onPlaySound()
                         }
                         onToggle()
                     },
@@ -279,7 +276,7 @@ fun TodoEditor(
                     },
                     enabled = true,
                     textStyle = TextStyle(
-                        color = if(todo.isCompleted) textColor.copy(0.7f) else textColor,
+                        color = if(todo.isCompleted) completedTextColor else textColor,
                         fontFamily = regular,
                         fontWeight = FontWeight.Normal,
                         fontSize = textSize.sp
@@ -306,18 +303,12 @@ fun TodoEditor(
                         }
                     }
                 )
-                // Only request focus for newly added todos
-                if (shouldRequestFocus) {
-                    LaunchedEffect(Unit) {
-                        focusRequester.requestFocus()
-                    }
-                }
                 // Placeholder shown only when title is empty
                 if (todo.title.isEmpty()) {
                     Text(
                         text = "Write Down",
                         style = TextStyle(
-                            color = textColor.copy(0.3f),
+                            color = placeholderColor,
                             fontFamily = regular,
                             fontWeight = FontWeight.Normal,
                             fontSize = textSize.sp
@@ -325,31 +316,31 @@ fun TodoEditor(
                     )
                 }
 
-                //strike animation in canvas
-                Canvas(
-                    modifier = Modifier.matchParentSize()
-                ) {
-                    val layout = textLayoutResult ?: return@Canvas
-                    val lineCount = layout.lineCount
+                //strike animation in canvas - only draw when animating or completed
+                if (strikeProgress > 0f) {
+                    Canvas(
+                        modifier = Modifier.matchParentSize()
+                    ) {
+                        val layout = textLayoutResult ?: return@Canvas
+                        val lineCount = layout.lineCount
+                        val strokeWidthPx = 2.dp.toPx()
 
-                    for (line in 0 until lineCount) {
-                        val start = layout.getLineLeft(line)
-                        val end = layout.getLineRight(line)
+                        for (line in 0 until lineCount) {
+                            val start = layout.getLineLeft(line)
+                            val end = layout.getLineRight(line)
+                            val animatedEnd = start + (end - start) * strikeProgress
 
-                        val progress = strikeProgress.coerceIn(0f,1f)
-                        val animatedEnd = start + (end - start) * progress
+                            val top = layout.getLineTop(line)
+                            val bottom = layout.getLineBottom(line)
+                            val y = top + (bottom - top) / 2f
 
-                        val top = layout.getLineTop(line)
-                        val bottom = layout.getLineBottom(line)
-                        val lineHeight = bottom - top
-                        val y = top + lineHeight/ 2f
-
-                        drawLine(
-                            color = textColor.copy(0.7f),
-                            start = Offset(start,y),
-                            end = Offset( animatedEnd,y),
-                            strokeWidth = 2.dp.toPx()
-                        )
+                            drawLine(
+                                color = strikeColor,
+                                start = Offset(start, y),
+                                end = Offset(animatedEnd, y),
+                                strokeWidth = strokeWidthPx
+                            )
+                        }
                     }
                 }
             }

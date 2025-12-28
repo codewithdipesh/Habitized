@@ -55,7 +55,7 @@ fun BottomNavBar(
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.onPrimary,
+                    indicatorColor = MaterialTheme.colorScheme.onTertiary,
                     selectedIconColor = MaterialTheme.colorScheme.inverseOnSurface,
                     unselectedIconColor = MaterialTheme.colorScheme.onPrimary
                 )
@@ -100,7 +100,7 @@ fun BottomNavBar(
                     )
                 },
                 colors = NavigationBarItemDefaults.colors(
-                    indicatorColor = MaterialTheme.colorScheme.onPrimary,
+                    indicatorColor = MaterialTheme.colorScheme.onTertiary,
                     selectedIconColor = MaterialTheme.colorScheme.inverseOnSurface,
                     unselectedIconColor = MaterialTheme.colorScheme.onPrimary
                 )

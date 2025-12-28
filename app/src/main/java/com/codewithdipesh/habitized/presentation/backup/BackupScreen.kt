@@ -81,15 +81,6 @@ fun BackupScreen(
         }
     }
 
-    // Restore confirmation dialog
-    if (uiState.showRestoreDialog && uiState.selectedBackupForRestore != null) {
-        RestoreConfirmationDialog(
-            backup = uiState.selectedBackupForRestore!!,
-            summary = uiState.backupSummary,
-            onConfirm = { viewModel.restoreBackup(uiState.selectedBackupForRestore!!) },
-            onDismiss = { viewModel.hideRestoreDialog() }
-        )
-    }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -111,6 +102,18 @@ fun BackupScreen(
             )
         }
     ) { innerPadding ->
+
+        // Restore confirmation dialog
+        if (uiState.showRestoreDialog && uiState.selectedBackupForRestore != null) {
+            RestoreConfirmationDialog(
+                backup = uiState.selectedBackupForRestore!!,
+                summary = uiState.backupSummary,
+                onConfirm = { viewModel.restoreBackup(uiState.selectedBackupForRestore!!) },
+                onDismiss = { viewModel.hideRestoreDialog() }
+            )
+        }
+
+
         Box(
             modifier = Modifier
                 .fillMaxSize()

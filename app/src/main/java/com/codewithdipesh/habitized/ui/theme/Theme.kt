@@ -2,6 +2,7 @@ package com.codewithdipesh.habitized.ui.theme
 
 import android.app.Activity
 import android.os.Build
+import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
@@ -10,13 +11,15 @@ import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import com.codewithdipesh.habitized.R
 
 private val DarkColors = darkColorScheme(
-    background = Color(0XFF010101),
+    background = Color(0xFF150F05),
     surface = Color(0xFF1A1A1A),
     onSurface = Color(0xFF5F5F5F),
     primary = Color(0xFFEEA445),
@@ -24,7 +27,7 @@ private val DarkColors = darkColorScheme(
     secondary = Color(0xFF1A1A1A) ,
     onSecondary = Color(0xFF5F5F5F),
     tertiary = Color(0xFF7C7878),
-    onTertiary = Color.White,
+    onTertiary = Color(0xFFE0E0E0),
     outline = Color(0xFF2F2E2E),
     surfaceVariant = Color(0xFF2F2E2E),
     inverseOnSurface = Color.Black,
@@ -38,8 +41,8 @@ private val DarkColors = darkColorScheme(
 )
 
 private val LightColors = lightColorScheme(
-    background = Color(0xFFF7F7F7),
-    surface = Color(0xFFEDEEF2),
+    background = Color(0xFFFDF4E9),
+    surface = Color.White,
     onSurface = Color(0xFF828388),
     primary = Color(0xFFEEA445),
     onPrimary = Color.Black,

@@ -34,6 +34,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -147,6 +149,15 @@ fun AddHabitScreen(
         }
     }
 
+    // Scroll to bottom when reminder is shown
+    LaunchedEffect(state.isShowReminderTime) {
+        if (state.isShowReminderTime) {
+            // Small delay to allow the ReminderTimePicker to be composed
+            kotlinx.coroutines.delay(100)
+            scrollstate.animateScrollTo(scrollstate.maxValue)
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
         topBar = {
@@ -220,6 +231,7 @@ fun AddHabitScreen(
                 modifier = Modifier.fillMaxSize()
                     .padding(innerPadding)
                     .padding(horizontal = 24.dp)
+                    .padding(bottom = 24.dp)
                     .align(Alignment.TopCenter)
                     .verticalScroll(scrollstate),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
@@ -608,14 +620,15 @@ fun AddHabitScreen(
                                     fontSize = 16.sp
                                 )
                             )
-                            SlidingButton(
-                                isSelected = state.isShowReminderTime,
-                                onToggle = {
+                            Switch(
+                                checked = state.isShowReminderTime,
+                                onCheckedChange = {
                                     viewmodel.toggleReminderOption()
-                                    scope.launch {
-                                        scrollstate.scrollTo(scrollstate.maxValue)
-                                    }
-                                }
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = MaterialTheme.colorScheme.primary,
+                                    checkedTrackColor = MaterialTheme.colorScheme.primary.copy(0.3f)
+                                )
                             )
                         }
                         //timer
