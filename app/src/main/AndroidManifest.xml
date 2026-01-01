@@ -80,6 +80,13 @@
         <receiver android:name=".data.alarmManager.AlarmReceiver"
             android:enabled="true"
             android:exported="false"/>
+
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="remove" />
+
         <provider
             android:authorities="${applicationId}.provider"
             android:name="androidx.core.content.FileProvider"

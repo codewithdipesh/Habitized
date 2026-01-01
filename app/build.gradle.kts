@@ -16,10 +16,18 @@ android {
         applicationId = "com.codewithdipesh.habitized"
         minSdk = 26
         targetSdk = 35
-        versionCode = 11
-        versionName = "1.1.2"
+        versionCode = 13
+        versionName = "1.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        defaultConfig {
+            externalNativeBuild {
+                cmake {
+                    arguments += listOf("-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON")
+                }
+            }
+        }
     }
 
     buildTypes {
@@ -41,6 +49,11 @@ android {
     buildFeatures {
         compose = true
         buildConfig = true
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
     }
 }
 
@@ -82,7 +95,7 @@ dependencies {
     implementation("com.kizitonwose.calendar:compose:2.6.2")
 
     //lottie
-    implementation("com.github.LottieFiles:dotlottie-android:0.4.1")
+    implementation("com.github.LottieFiles:dotlottie-android:0.12.5")
 
     //coil
     implementation("io.coil-kt:coil-compose:2.5.0")
