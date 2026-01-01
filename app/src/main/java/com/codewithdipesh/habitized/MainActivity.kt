@@ -50,8 +50,6 @@ class MainActivity : ComponentActivity() {
 
     private lateinit var firebaseAnalytics: FirebaseAnalytics
 
-    private val introVideoUrl = "https://res.cloudinary.com/ds36qo9ws/video/upload/v1766569902/habit_types-into_sgibua.mov"
-
     @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -126,8 +124,7 @@ class MainActivity : ComponentActivity() {
                         goalViewModel = goalViewModel,
                         backupViewModel = backupViewModel,
                         drawerState = drawerState,
-                        habitPreference = habitPreference,
-                        introVideoUrl = introVideoUrl
+                        habitPreference = habitPreference
                     )
                 }
             }

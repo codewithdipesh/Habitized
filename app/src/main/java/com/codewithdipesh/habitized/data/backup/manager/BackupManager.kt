@@ -96,7 +96,7 @@ class BackupManager @Inject constructor(
             // Create preferences
             val preferences = BackupPreferences(
                 theme = habitPreference.getTheme(),
-                introShown = !habitPreference.getIntro(),
+                introShown = !habitPreference.isOnboardingRequired(),
                 autoBackupEnabled = habitPreference.isAutoBackupEnabled()
             )
 
@@ -191,7 +191,7 @@ class BackupManager @Inject constructor(
 
             // 8. Restore preferences
             habitPreference.updateTheme(backupData.preferences.theme)
-            habitPreference.updateIntro(!backupData.preferences.introShown)
+            habitPreference.setOnboardingRequired(!backupData.preferences.introShown)
             habitPreference.setAutoBackupEnabled(backupData.preferences.autoBackupEnabled)
 
             BackupResult.Success("Restore completed successfully")

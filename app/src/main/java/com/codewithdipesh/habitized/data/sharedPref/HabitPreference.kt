@@ -7,7 +7,7 @@ import androidx.core.content.edit
 class HabitPreference(context : Context){
     private val sharedPreferences = context.getSharedPreferences("habit_preferences", Context.MODE_PRIVATE)
     private val THEME_KEY = "THEME"
-    private val INTRO_KEY = "INTRO"
+    private val ONBOARDING_KEY = "ONBOARDING"
     private val LAST_BACKUP_DATE_KEY = "LAST_BACKUP_DATE"
     private val AUTO_BACKUP_ENABLED_KEY = "AUTO_BACKUP_ENABLED"
 
@@ -24,12 +24,19 @@ class HabitPreference(context : Context){
         sharedPreferences.edit() { putString(THEME_KEY, theme) }
     }
 
-    fun getIntro(default : Boolean = true) : Boolean {
-        return sharedPreferences.getBoolean(INTRO_KEY,default)
+    // Returns true if onboarding has NOT been completed yet (first launch)
+    fun isOnboardingRequired(default : Boolean = true) : Boolean {
+        return sharedPreferences.getBoolean(ONBOARDING_KEY, default)
     }
 
-    fun updateIntro(intro:Boolean){
-        sharedPreferences.edit() { putBoolean(INTRO_KEY, intro) }
+    // Mark onboarding as completed
+    fun setOnboardingCompleted(){
+        sharedPreferences.edit() { putBoolean(ONBOARDING_KEY, false) }
+    }
+
+    // Set onboarding status (used for backup restore)
+    fun setOnboardingRequired(required: Boolean){
+        sharedPreferences.edit() { putBoolean(ONBOARDING_KEY, required) }
     }
 
     // Backup related preferences

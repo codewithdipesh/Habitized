@@ -11,6 +11,10 @@ import kotlin.io.encoding.Base64
 import kotlin.io.encoding.ExperimentalEncodingApi
 
 sealed class Screen(val route : String){
+    object Welcome : Screen("welcome")
+    object OnboardingFirst : Screen("onboarding_first")
+    object OnboardingSecond : Screen("onboarding_second")
+    object OnboardingThird : Screen("onboarding_third")
     object Home : Screen("home")
     object AddHabit : Screen("addHabit/{id}/{date}") {
         fun createRoute(date: LocalDate = LocalDate.now(),id : String? = ""): String {

@@ -37,6 +37,10 @@ import com.codewithdipesh.habitized.presentation.timerscreen.durationScreen.Dura
 import com.codewithdipesh.habitized.presentation.timerscreen.sessionScreen.SessionScreen
 import com.codewithdipesh.habitized.presentation.timerscreen.sessionScreen.SessionViewModel
 import com.codewithdipesh.habitized.data.sharedPref.HabitPreference
+import com.codewithdipesh.habitized.presentation.onboarding.WelcomeScreen
+import com.codewithdipesh.habitized.presentation.onboarding.FirstScreen
+import com.codewithdipesh.habitized.presentation.onboarding.SecondScreen
+import com.codewithdipesh.habitized.presentation.onboarding.ThirdScreen
 import java.time.LocalDate
 import java.time.LocalTime
 import java.util.UUID
@@ -58,13 +62,18 @@ fun HabitizedNavHost(
     goalViewModel : GoalViewModel,
     backupViewModel : BackupViewModel,
     drawerState : DrawerState,
-    habitPreference: HabitPreference,
-    introVideoUrl: String = ""
+    habitPreference: HabitPreference
 ){
-    // Using dialog approach - always start at Home, dialog shows there
+    // Dynamic start destination based on onboarding status
+    val startDestination = if (habitPreference.isOnboardingRequired()) {
+        Screen.Welcome.route
+    } else {
+        Screen.Home.route
+    }
+
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route,
+        startDestination = startDestination,
         enterTransition = {
             EnterTransition.None
         },
@@ -78,13 +87,42 @@ fun HabitizedNavHost(
             ExitTransition.None
         },
     ) {
+        // Onboarding screens
+        composable(Screen.Welcome.route) {
+            WelcomeScreen(
+                onContinue = { navController.navigate(Screen.OnboardingFirst.route) }
+            )
+        }
+        composable(Screen.OnboardingFirst.route) {
+            FirstScreen(
+                onContinue = { navController.navigate(Screen.OnboardingSecond.route) },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.OnboardingSecond.route) {
+            SecondScreen(
+                onContinue = { navController.navigate(Screen.OnboardingThird.route) },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+        composable(Screen.OnboardingThird.route) {
+            ThirdScreen(
+                onContinue = {
+                    habitPreference.setOnboardingCompleted()
+                    navController.navigate(Screen.Home.route) {
+                        popUpTo(Screen.Welcome.route) { inclusive = true }
+                    }
+                },
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        // Main app screens
         composable(Screen.Home.route) {
             HomeScreen(
                 navController = navController,
                 viewmodel = homeViewModel,
-                drawerState = drawerState,
-                habitPreference = habitPreference,
-                introVideoUrl = introVideoUrl
+                drawerState = drawerState
             )
         }
         composable(

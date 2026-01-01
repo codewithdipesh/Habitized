@@ -69,8 +69,6 @@ import com.codewithdipesh.habitized.presentation.homescreen.component.TodoEditor
 import com.codewithdipesh.habitized.presentation.navigation.Screen
 import com.codewithdipesh.habitized.ui.theme.instrumentSerif
 import com.codewithdipesh.habitized.ui.theme.regular
-import com.codewithdipesh.habitized.data.sharedPref.HabitPreference
-import com.codewithdipesh.habitized.presentation.homescreen.introscreen.IntroDialog
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -82,9 +80,7 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     navController: NavController,
     viewmodel: HomeViewModel,
-    drawerState: DrawerState,
-    habitPreference: HabitPreference? = null,
-    introVideoUrl: String = ""
+    drawerState: DrawerState
 ) {
     val lazyListState = rememberLazyListState()
     val scope = rememberCoroutineScope()
@@ -107,11 +103,6 @@ fun HomeScreen(
     var habitForShowingAlert by remember { mutableStateOf<HabitWithProgress?>(null) }
 
     var hideJob by remember { mutableStateOf<Job?>(null) }
-
-    // Intro dialog state
-    var showIntroDialog by remember {
-        mutableStateOf(habitPreference?.getIntro(default = true) == true && introVideoUrl.isNotEmpty())
-    }
 
     // Shared MediaPlayer for todo completion sound (created once, shared across all todos)
     val scratchSoundPlayer = remember { MediaPlayer.create(context, R.raw.scratch_sound) }
@@ -254,21 +245,6 @@ fun HomeScreen(
                 }
             )
         }
-
-        // Intro video dialog for first-time users
-        if (showIntroDialog) {
-            IntroDialog(
-                videoUrl = introVideoUrl,
-                onDismiss = {
-                    habitPreference?.updateIntro(false)
-                    showIntroDialog = false
-                },
-                onVideoEnd = {
-                    habitPreference?.updateIntro(false)
-                }
-            )
-        }
-
 
         Column(modifier = Modifier
             .fillMaxSize()
